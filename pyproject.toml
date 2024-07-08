@@ -18,6 +18,9 @@ pandas = "^2.2.2"
 peewee = "^3.17.6"
 psycopg2-binary = "^2.9.9"
 black = "^24.4.2"
+celery = {extras = ["beat", "redis"], version = "^5.4.0"}
+flower = "^2.0.1"
+eventlet = "^0.36.1"
 
 
 [build-system]
