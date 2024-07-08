@@ -1,15 +1,10 @@
 import peewee
 import local_settings
 
-from celery import Celery
 from database_manager import DatabaseManager
 from fake_useragent import UserAgent
 from tasks import scrapper
 
-
-app = Celery('tasks')
-app.config_from_object('celeryconfig')
-app.autodiscover_tasks(['tasks'])
 
 ua = UserAgent()
 

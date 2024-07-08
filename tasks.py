@@ -1,9 +1,10 @@
 import requests
+
+from local_settings import BROKER_URL, BACKEND_URL
 from bs4 import BeautifulSoup
 from celery import Celery
 
-BROKER_URL = 'redis://localhost:6379/0'
-BACKEND_URL = 'redis://localhost:6379/0'
+
 app = Celery('tasks', broker=BROKER_URL, backend=BACKEND_URL)
 
 app.conf.broker_connection_retry = True
