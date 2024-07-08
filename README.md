@@ -2,6 +2,11 @@
 
 This Python program scrapes proxy data from four different websites and stores it in a PostgreSQL database.
 
+## Table of contents
+   - [Feature](#features)
+   - [Requirements](#requirements)
+   - [Installation & usage](#installation-and-usage)
+
 ## Features
 
 - **Scraping**: Scrapes proxy data from four specified websites.
@@ -15,13 +20,12 @@ This Python program scrapes proxy data from four different websites and stores i
 - Required Python libraries (install via `poetry install`)
 - PostgreSQL
 
-## Installation
+## Installation and Usage
 
 1. **Clone the repository:**
 
    ```bash
    git clone https://github.com/MadnessCod/Proxy_Finder.git
-   cd proxy-scraper
    ```
 2. **install poetry**
 
@@ -41,4 +45,36 @@ This Python program scrapes proxy data from four different websites and stores i
    2. copy sample_settings.py to local_settings.py
    3. put your PostgreSQL infor inside local_settings.py 
 
-   
+5. **Setup Redis**
+   1. open a new terminal 
+   2. 
+      ```bash
+      cd redis
+      ```
+   3. 
+      ```bash
+      redis-server.exe
+      ```
+6. **flower(optional)**
+   * flower is used to monitor celery tasks
+   1. open a new terminal 
+   2. 
+      ```bash
+      celery -A tasks flower
+      ```
+   3. head to your browser 
+   4. enter http://localhost:5555/
+7. **running celery**
+   1. open a new terminal 
+   2. 
+      ```bash
+      celery -A tasks worker --loglevel=info -P eventlet
+      ```
+   3. for windows use `-P eventlet`
+
+8. **Main program run**
+   1. open a new terminal 
+   2. 
+      ```bash
+      python Main.py
+      ```
