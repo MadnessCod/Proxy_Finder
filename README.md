@@ -1,6 +1,7 @@
-# Proxy Scraper and Database Storer
+# Authomatic Proxy Scraper
 
-This Python program scrapes proxy data from four different websites and stores it in a PostgreSQL database.
+This Python program scrapes proxy data from four different websites and stores it in a PostgreSQL database, 
+uses celery and celery beat to make schedule calls to websites and evaluates their availability
 
 ## Table of contents
    - [Feature](#features)
@@ -19,6 +20,7 @@ This Python program scrapes proxy data from four different websites and stores i
 - Python 3.x
 - Required Python libraries (install via `poetry install`)
 - PostgreSQL
+- Redis
 
 ## Installation and Usage
 
@@ -45,7 +47,11 @@ This Python program scrapes proxy data from four different websites and stores i
    2. copy sample_settings.py to local_settings.py
    3. put your PostgreSQL infor inside local_settings.py 
 
-5. **Setup Redis**
+5. **Create Database**
+   ```bash
+   python database_creation.py
+   ```
+6. **Setup Redis**
    1. open a new terminal 
    2. 
       ```bash
@@ -55,26 +61,39 @@ This Python program scrapes proxy data from four different websites and stores i
       ```bash
       redis-server.exe
       ```
-6. **flower(optional)**
+7. **flower(optional)**
    * flower is used to monitor celery tasks
    1. open a new terminal 
    2. 
       ```bash
+      cd Scrapper
+      ```
+   3.
+      ```bash
       celery -A tasks flower
       ```
-   3. head to your browser 
-   4. enter http://localhost:5555/
-7. **running celery**
+   4. head to your browser 
+   5. enter http://localhost:5555/
+
+8. **Running celery**
    1. open a new terminal 
    2. 
+      ```bash
+      cd Scrapper
+      ```
+   3.
       ```bash
       celery -A tasks worker --loglevel=info -P eventlet
       ```
-   3. for windows use `-P eventlet`
+   4. for windows use `-P eventlet`
 
-8. **Main program run**
+9. **Running celery beat**
    1. open a new terminal 
    2. 
       ```bash
-      python Main.py
+      cd Scrapper
+      ```
+   3.
+      ```bash
+      celery -A tasks beat --loglevel=info
       ```

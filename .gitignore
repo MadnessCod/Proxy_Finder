@@ -1,3 +1,7 @@
-local_settings.py
+Scrapper/local_settings.py
 .idea/
 __pycache__/
+Scrapper/celerybeat-schedule.bak
+Scrapper/celerybeat-schedule.dat
+Scrapper/celerybeat-schedule.dir
+redis/

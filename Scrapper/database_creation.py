@@ -27,3 +27,14 @@ class Proxy(peewee.Model):
 
     class Meta:
         database = database_manager.db
+
+
+if __name__ == "__main__":
+    try:
+        if not Proxy.table_exists():
+            database_manager.create_table(models=[Proxy])
+    except peewee.DatabaseError as error:
+        print(f'Error : {error}')
+    finally:
+        if database_manager.db:
+            database_manager.db.close()

@@ -17,7 +17,7 @@ class DatabaseManager:
             user=self.user,
             password=self.password,
             host=self.host,
-            port=self.port
+            port=self.port,
         )
         database_connection.connect()
         return database_connection
