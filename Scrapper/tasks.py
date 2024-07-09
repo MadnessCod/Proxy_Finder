@@ -3,20 +3,8 @@ import requests
 
 from local_settings import BROKER_URL, BACKEND_URL
 from bs4 import BeautifulSoup
-from celery import Celery
+from celeryapp import app
 from database_creation import Proxy
-
-
-app = Celery('tasks', broker=BROKER_URL, backend=BACKEND_URL)
-
-app.conf.broker_connection_retry = True
-app.autodiscover_tasks()
-
-
-@app.task(bind=True)
-def debug_task(self):
-    print(f'Request: {self.request!r}')
-    print(self.AsyncResult(self.request.id).state)
 
 
 @app.task
@@ -61,3 +49,4 @@ def proxy_evaluator():
         prox = {'http': f'{proxy.method}://{proxy.ip_address}:{proxy.port}'}
         if requests.get('https://www.google.com', proxies=prox).status_code != 200:
             Proxy.delete().where(Proxy.ip_address == proxy.ip_address).execute()
+
