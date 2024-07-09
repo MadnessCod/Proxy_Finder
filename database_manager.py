@@ -27,4 +27,3 @@ class DatabaseManager:
 
     def create_table(self, models):
         self.db.create_tables(models)
-
