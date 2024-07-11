@@ -13,7 +13,6 @@ uses celery and celery beat to make schedule calls to websites and evaluates the
 - **Scraping**: Scrapes proxy data from four specified websites.
 - **Database Storage**: Stores the scraped proxy data in a PostgreSQL database.
 - **Scheduled Execution**: Can be scheduled to run periodically to update the proxy data.
-- **Logging**: Logs scraping and database operations for monitoring and troubleshooting.
 
 ## Requirements
 
