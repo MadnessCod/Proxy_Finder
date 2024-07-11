@@ -46,53 +46,57 @@ uses celery and celery beat to make schedule calls to websites and evaluates the
    2. copy sample_settings.py to local_settings.py
    3. put your PostgreSQL infor inside local_settings.py 
 
-5. **Create Database**
-   ```bash
-   python database_creation.py
-   ```
-6. **Setup Redis**
-   1. open a new terminal 
-   2. 
+#### you can run the program in two ways
+**Manually**
+   1. **Create Database**
       ```bash
-      cd redis
+      python database_creation.py
       ```
-   3. 
-      ```bash
-      redis-server.exe
-      ```
-7. **flower(optional)**
-   * flower is used to monitor celery tasks
-   1. open a new terminal 
-   2. 
-      ```bash
-      cd Scrapper
-      ```
-   3.
-      ```bash
-      celery -A tasks flower
-      ```
-   4. head to your browser 
-   5. enter http://localhost:5555/
+   2. **Setup Redis**
+         1. open a new terminal 
+         2. 
+            ```bash
+            cd redis
+            ```
+         3. 
+            ```bash
+            redis-server.exe
+            ```
+   3. **flower(optional)**
+      * flower is used to monitor celery tasks
+      1. open a new terminal 
+      2. 
+         ```bash
+         cd Scrapper
+         ```
+      3.
+         ```bash
+         celery -A tasks flower
+         ```
+      4. head to your browser 
+      5. enter http://localhost:5555/
 
-8. **Running celery**
-   1. open a new terminal 
-   2. 
-      ```bash
-      cd Scrapper
-      ```
-   3.
-      ```bash
-      celery -A tasks worker --loglevel=info -P eventlet
-      ```
-   4. for windows use `-P eventlet`
+   4. **Running celery**
+      1. open a new terminal 
+      2. 
+         ```bash
+         cd Scrapper
+         ```
+      3.
+         ```bash
+         celery -A tasks worker --loglevel=info -P eventlet
+         ```
+      4. for windows use `-P eventlet`
 
-9. **Running celery beat**
-   1. open a new terminal 
-   2. 
-      ```bash
-      cd Scrapper
-      ```
-   3.
-      ```bash
-      celery -A tasks beat --loglevel=info
-      ```
+   5. **Running celery beat**
+      1. open a new terminal 
+      2. 
+         ```bash
+         cd Scrapper
+         ```
+      3.
+         ```bash
+         celery -A tasks beat --loglevel=info
+         ```
+**Automatically**
+   1. run Main.py

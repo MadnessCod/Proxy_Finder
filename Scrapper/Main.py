@@ -61,7 +61,9 @@ if __name__ == '__main__':
     redis_process = start_redis()
     print('redis started')
     time.sleep(5)
-
+    flower_process = start_flower('tasks')
+    print('flower started, head to http://localhost:5555/')
+    time.sleep(5)
     celery_worker_process = start_celery_worker('tasks')
     print('celery started')
     time.sleep(5)
@@ -74,6 +76,7 @@ if __name__ == '__main__':
             time.sleep(1)
     except KeyboardInterrupt:
         redis_process.terminate()
+        flower_process.terminate()
         celery_beat_process.terminate()
         celery_worker_process.terminate()
         print('process terminated')
