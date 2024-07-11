@@ -5,3 +5,4 @@ Scrapper/celerybeat-schedule.bak
 Scrapper/celerybeat-schedule.dat
 Scrapper/celerybeat-schedule.dir
 redis/
+Scrapper/dump.rdb

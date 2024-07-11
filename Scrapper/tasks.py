@@ -12,6 +12,8 @@ from local_settings import BROKER_URL, BACKEND_URL
 
 app = Celery("Scrapper", broker=BROKER_URL, backend=BACKEND_URL)
 
+app.conf.broker_connection_retry = True
+
 app.conf.beat_schedule = {
     "scraping": {
         "task": "tasks.main",
