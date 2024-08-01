@@ -7,6 +7,7 @@ from fake_useragent import UserAgent
 from database_creation import Proxy
 
 from celery import Celery
+from celery import chain
 from celery.schedules import crontab
 from local_settings import BROKER_URL, BACKEND_URL
 
@@ -113,7 +114,7 @@ def scrapper(url: str, method: str) -> None:
                         google=proxy[5],
                         https=proxy[6],
                         last_checked=proxy[7],
-                        status=check_proxy.delay(method, proxy[0], proxy[1]),
+                        status=chain(check_proxy.s(method, proxy[0], proxy[1])).apply_async(),
                     )
             except peewee.OperationalError as error:
                 print(f"Error: {error}")
@@ -165,15 +166,15 @@ def proxy_evaluator_main() -> None:
         print(f"Error : {error}")
     else:
         for proxy in proxies:
-            proxy_evaluator.delay(proxy)
+            proxy_evaluator.delay(proxy.method, proxy.ip_address, proxy.port)
 
 
 @app.task()
-def proxy_evaluator(proxy) -> None:
-    prox = {"http": f"{proxy.method}://{proxy.ip_address}:{proxy.port}"}
+def proxy_evaluator(method, ip_address, port) -> None:
+    prox = {"http": f"{method}://{ip_address}:{port}"}
     try:
         if requests.get("https://www.google.com", proxies=prox).status_code != 200:
-            Proxy.delete().where(Proxy.ip_address == proxy.ip_address).execute()
+            Proxy.delete().where(Proxy.ip_address == ip_address).execute()
     except requests.exceptions.RequestException as error:
         print(f"Reqeust Error : {error}")
     except peewee.OperationalError as error:
