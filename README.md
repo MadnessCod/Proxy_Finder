@@ -1,3 +1,4 @@
+### ⚠️ Outdated Documentation Warning
 # Authomatic Proxy Scraper
 
 This Python program scrapes proxy data from four different websites and stores it in a PostgreSQL database, 

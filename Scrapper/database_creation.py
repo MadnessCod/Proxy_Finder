@@ -1,8 +1,9 @@
+from datetime import datetime
+
 import peewee
 
 from Scrapper.database_manager import DatabaseManager
 from local_settings import DATABASE
-
 
 database_manager = DatabaseManager(
     database_name=DATABASE["name"],
@@ -13,7 +14,16 @@ database_manager = DatabaseManager(
 )
 
 
-class Proxy(peewee.Model):
+class MyBaseModel(peewee.Model):
+    created_date = peewee.DateField(default=datetime.now)
+    updated_date = peewee.DateTimeField(default=datetime.now)
+
+    class Meta:
+        abstract = True
+        database = database_manager.db
+
+
+class Proxy(MyBaseModel):
     ip_address = peewee.CharField(max_length=100, verbose_name="ip address")
     method = peewee.CharField(max_length=100, verbose_name="method")
     port = peewee.CharField(max_length=100, verbose_name="port")
@@ -24,10 +34,7 @@ class Proxy(peewee.Model):
     https = peewee.CharField(max_length=100, verbose_name="https")
     last_checked = peewee.CharField(max_length=100, verbose_name="last checked")
     status = peewee.BooleanField(default=False, verbose_name="status")
-    location = peewee.CharField(verbose_name='location', null=True)
-
-    class Meta:
-        database = database_manager.db
+    location = peewee.CharField(verbose_name="location", null=True)
 
 
 if __name__ == "__main__":
@@ -35,7 +42,7 @@ if __name__ == "__main__":
         if not Proxy.table_exists():
             database_manager.create_table(models=[Proxy])
     except peewee.DatabaseError as error:
-        print(f'Error : {error}')
+        print(f"Error : {error}")
     finally:
         if database_manager.db:
             database_manager.db.close()

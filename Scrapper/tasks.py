@@ -1,13 +1,13 @@
 import requests
 import peewee
 
+from datetime import datetime
+
 from bs4 import BeautifulSoup
-
 from fake_useragent import UserAgent
-from Scrapper.database_creation import Proxy
-
 from celery import shared_task, chord
 
+from Scrapper.database_creation import Proxy
 
 ua = UserAgent()
 websites = {
@@ -85,33 +85,55 @@ def scrapper(url: str, method: str) -> None:
             trs = {i: j for i, j in enumerate(table.find("tbody").find_all("tr"))}
             for tr in trs.values():
                 proxy_list.append([j.text for j in tr.find_all("td")])
-            try:
-                for proxy in proxy_list:
-                    chord([check_proxy.s(method, proxy[0], proxy[1]),
-                           location_checker.s(method, proxy[0], proxy[1])],
-                          database_entry.s(method=method, proxy=proxy)
-                          ).apply_async()
 
-            except peewee.OperationalError as error:
-                print(f"Error: {error}")
+            for proxy in proxy_list:
+                chord(
+                    [
+                        check_proxy.s(method, proxy[0], proxy[1]),
+                        location_checker.s(method, proxy[0], proxy[1]),
+                    ],
+                    database_entry.s(method=method, proxy=proxy),
+                ).apply_async()
 
 
 @shared_task(ignore_result=True)
 def database_entry(args, method, proxy):
     status, location = args
-    Proxy.create(
-        ip_address=proxy[0],
-        method=method,
-        port=proxy[1],
-        code=proxy[2],
-        country=proxy[3],
-        anonymity=proxy[4],
-        google=proxy[5],
-        https=proxy[6],
-        last_checked=proxy[7],
-        status=status,
-        location=location,
-    )
+    try:
+        if (
+            not Proxy.select()
+            .where(
+                (Proxy.method == method)
+                & (Proxy.ip_address == proxy[0])
+                & (Proxy.port == proxy[1])
+            )
+            .exists()
+        ):
+            Proxy.create(
+                created_date=datetime.now().date(),
+                updated_date=datetime.now(),
+                ip_address=proxy[0],
+                method=method,
+                port=proxy[1],
+                code=proxy[2],
+                country=proxy[3],
+                anonymity=proxy[4],
+                google=proxy[5],
+                https=proxy[6],
+                last_checked=proxy[7],
+                status=status,
+                location=location,
+            )
+        else:
+            Proxy.update(
+                updated_date=datetime.now(),
+            ).where(
+                (Proxy.method == method)
+                & (Proxy.ip_address == proxy[0])
+                & (Proxy.port == proxy[1])
+            ).execute()
+    except peewee.IntegrityError as error:
+        print(f"Error: {error}")
 
 
 @shared_task()
@@ -133,7 +155,9 @@ def check_proxy(method: str, ip: str, port: str) -> bool:
     """
     proxy = {"http": f"{method}://{ip}:{port}"}
     try:
-        response = requests.get("https://www.google.com", proxies=proxy).status_code == 200
+        response = (
+            requests.get("https://www.google.com", proxies=proxy).status_code == 200
+        )
     except requests.exceptions.RequestException as error:
         print(f"Error: {error}")
     else:
@@ -172,20 +196,21 @@ def proxy_evaluator(method, ip_address, port) -> None:
     except requests.exceptions.RequestException as error:
         print(f"Reqeust Error : {error}")
     except peewee.OperationalError as error:
-        print(f'Database Error : {error}')
+        print(f"Database Error : {error}")
 
 
 @shared_task()
 def location_checker(method, ip_address, port):
-    proxy = {method: f'{method}://{ip_address}:{port}'}
+    proxy = {method: f"{method}://{ip_address}:{port}"}
     try:
-        response = requests.get('https://www.iplocation.net/', proxies=proxy)
+        response = requests.get("https://www.iplocation.net/", proxies=proxy)
     except requests.exceptions.RequestException as error:
-        print(f'Error : {error}')
+        print(f"Error : {error}")
     else:
-        soup = BeautifulSoup(response.text, 'html.parser')
-        location = soup.select('#ip-placeholder > div > div.col.IP-address-box > div:nth-child(3) > div > '
-                               'div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div > p > span')
+        soup = BeautifulSoup(response.text, "html.parser")
+        location = soup.select(
+            "#ip-placeholder > div > div.col.IP-address-box > div:nth-child(3) > div > "
+            "div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div > p > span"
+        )
         for element in location:
-            print(element.get_text(strip=True), '\n', '*' * 40)
-            return element.get_text(strip=True)
+            return element.get_text(strip=True).split("[")[0]
