@@ -99,4 +99,4 @@ uses celery and celery beat to make schedule calls to websites and evaluates the
          celery -A tasks beat --loglevel=info
          ```
 **Automatically**
-   1. run Main.py
+   1. run scrapper.py
