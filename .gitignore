@@ -1,6 +1,8 @@
 local_settings.py
 Scrapper/dump.rdb
-
+celerybeat-schedule.dir
+celerybeat-schedule.dat
+celerybeat-schedule.bak
 
 redis/
 .idea/
