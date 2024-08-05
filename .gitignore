@@ -1,6 +1,6 @@
-Scrapper/local_settings.py
+local_settings.py
 Scrapper/dump.rdb
-Scrapper/celery*
+
 
 redis/
 .idea/

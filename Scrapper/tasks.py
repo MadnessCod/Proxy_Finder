@@ -4,26 +4,10 @@ import peewee
 from bs4 import BeautifulSoup
 
 from fake_useragent import UserAgent
-from database_creation import Proxy
+from Scrapper.database_creation import Proxy
 
-from celery import Celery, chord
-from celery.schedules import crontab
-from local_settings import BROKER_URL, BACKEND_URL
+from celery import shared_task, chord
 
-app = Celery("Scrapper", broker=BROKER_URL, backend=BACKEND_URL)
-
-app.conf.broker_connection_retry = True
-
-app.conf.beat_schedule = {
-    "scraping": {
-        "task": "tasks.main",
-        "schedule": crontab('*/10'),
-    },
-    "evaluator": {
-        "task": "tasks.proxy_evaluator_main",
-        "schedule": crontab('*/5'),
-    },
-}
 
 ua = UserAgent()
 websites = {
@@ -34,13 +18,13 @@ websites = {
 }
 
 
-@app.task(bind=True)
+@shared_task(bind=True)
 def debug_task(self):
     print(f"Request: {self.request!r}")
     print(self.AsyncResult(self.request.id).state)
 
 
-@app.task()
+@shared_task()
 def main():
     """
     It iterates over the `websites`dictionary, and calls the `scrapper` Celery task
@@ -50,7 +34,7 @@ def main():
         scrapper.delay(website, method)
 
 
-@app.task()
+@shared_task()
 def scrapper(url: str, method: str) -> None:
     """
     Scrapes proxy information from a given URL and stores it in the database.
@@ -112,7 +96,7 @@ def scrapper(url: str, method: str) -> None:
                 print(f"Error: {error}")
 
 
-@app.task(ignore_result=True)
+@shared_task(ignore_result=True)
 def database_entry(args, method, proxy):
     status, location = args
     Proxy.create(
@@ -130,7 +114,7 @@ def database_entry(args, method, proxy):
     )
 
 
-@app.task()
+@shared_task()
 def check_proxy(method: str, ip: str, port: str) -> bool:
     """
     Checks the connectivity of a given proxy by attempting to access 'https://www.google.com'.
@@ -156,7 +140,7 @@ def check_proxy(method: str, ip: str, port: str) -> bool:
         return response
 
 
-@app.task()
+@shared_task()
 def proxy_evaluator_main() -> None:
     """
     Evaluates proxies in the database by checking their connectivity to Google.
@@ -179,7 +163,7 @@ def proxy_evaluator_main() -> None:
             proxy_evaluator.delay(proxy.method, proxy.ip_address, proxy.port)
 
 
-@app.task()
+@shared_task()
 def proxy_evaluator(method, ip_address, port) -> None:
     prox = {"http": f"{method}://{ip_address}:{port}"}
     try:
@@ -191,7 +175,7 @@ def proxy_evaluator(method, ip_address, port) -> None:
         print(f'Database Error : {error}')
 
 
-@app.task()
+@shared_task()
 def location_checker(method, ip_address, port):
     proxy = {method: f'{method}://{ip_address}:{port}'}
     try:

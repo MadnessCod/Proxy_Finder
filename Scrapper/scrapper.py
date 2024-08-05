@@ -38,6 +38,7 @@ def start_celery_beat(app_name, loglevel='info'):
         'celery',
         '-A', app_name,
         'beat',
+        '--loglevel=' + loglevel,
     ]
     celery_beat_process = subprocess.Popen(celery_beat_beat_command)
     return celery_beat_process

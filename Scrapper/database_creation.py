@@ -1,6 +1,6 @@
 import peewee
 
-from database_manager import DatabaseManager
+from Scrapper.database_manager import DatabaseManager
 from local_settings import DATABASE
 
 
