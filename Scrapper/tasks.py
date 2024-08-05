@@ -6,8 +6,7 @@ from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 from database_creation import Proxy
 
-from celery import Celery
-from celery import chain
+from celery import Celery, chord
 from celery.schedules import crontab
 from local_settings import BROKER_URL, BACKEND_URL
 
@@ -104,20 +103,31 @@ def scrapper(url: str, method: str) -> None:
                 proxy_list.append([j.text for j in tr.find_all("td")])
             try:
                 for proxy in proxy_list:
-                    Proxy.create(
-                        ip_address=proxy[0],
-                        method=method,
-                        port=proxy[1],
-                        code=proxy[2],
-                        country=proxy[3],
-                        anonymity=proxy[4],
-                        google=proxy[5],
-                        https=proxy[6],
-                        last_checked=proxy[7],
-                        status=chain(check_proxy.s(method, proxy[0], proxy[1])).apply_async(),
-                    )
+                    chord([check_proxy.s(method, proxy[0], proxy[1]),
+                           location_checker.s(method, proxy[0], proxy[1])],
+                          database_entry.s(method=method, proxy=proxy)
+                          ).apply_async()
+
             except peewee.OperationalError as error:
                 print(f"Error: {error}")
+
+
+@app.task(ignore_result=True)
+def database_entry(args, method, proxy):
+    status, location = args
+    Proxy.create(
+        ip_address=proxy[0],
+        method=method,
+        port=proxy[1],
+        code=proxy[2],
+        country=proxy[3],
+        anonymity=proxy[4],
+        google=proxy[5],
+        https=proxy[6],
+        last_checked=proxy[7],
+        status=status,
+        location=location,
+    )
 
 
 @app.task()
@@ -179,3 +189,19 @@ def proxy_evaluator(method, ip_address, port) -> None:
         print(f"Reqeust Error : {error}")
     except peewee.OperationalError as error:
         print(f'Database Error : {error}')
+
+
+@app.task()
+def location_checker(method, ip_address, port):
+    proxy = {method: f'{method}://{ip_address}:{port}'}
+    try:
+        response = requests.get('https://www.iplocation.net/', proxies=proxy)
+    except requests.exceptions.RequestException as error:
+        print(f'Error : {error}')
+    else:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        location = soup.select('#ip-placeholder > div > div.col.IP-address-box > div:nth-child(3) > div > '
+                               'div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div > p > span')
+        for element in location:
+            print(element.get_text(strip=True), '\n', '*' * 40)
+            return element.get_text(strip=True)

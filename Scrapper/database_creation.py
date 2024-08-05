@@ -24,6 +24,7 @@ class Proxy(peewee.Model):
     https = peewee.CharField(max_length=100, verbose_name="https")
     last_checked = peewee.CharField(max_length=100, verbose_name="last checked")
     status = peewee.BooleanField(default=False, verbose_name="status")
+    location = peewee.CharField(verbose_name='location', null=True)
 
     class Meta:
         database = database_manager.db
