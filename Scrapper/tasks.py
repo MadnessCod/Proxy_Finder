@@ -56,18 +56,6 @@ def scrapper(url: str, method: str) -> None:
         the status of each proxy (whether it successfully connects to Google) is asynchronously
         checked using the `check_proxy` Celery task.
 
-        Example of `Proxy` database model:
-        class Proxy(peewee.Model):
-            ip_address = peewee.CharField(unique=True)
-            method = peewee.CharField()
-            port = peewee.IntegerField()
-            code = peewee.CharField()
-            country = peewee.CharField()
-            anonymity = peewee.CharField()
-            google = peewee.CharField()
-            https = peewee.CharField()
-            last_checked = peewee.CharField()
-            status = peewee.CharField()
     """
     try:
         proxy_list = list()

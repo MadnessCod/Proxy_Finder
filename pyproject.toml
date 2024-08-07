@@ -20,6 +20,7 @@ celery = {extras = ["beat", "redis"], version = "^5.4.0"}
 flower = "^2.0.1"
 eventlet = "^0.36.1"
 black = "^24.4.2"
+kivy = "^2.3.0"
 
 
 [build-system]
